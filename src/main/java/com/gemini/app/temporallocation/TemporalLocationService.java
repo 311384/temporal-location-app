@@ -19,42 +19,45 @@ public class TemporalLocationService {
         // Define a porta para o Heroku. O Heroku define a porta usando a variável de ambiente PORT.
         port(getHerokuAssignedPort());
 
-        // Define a rota POST para adicionar uma nova localização.
-        // O cliente envia um JSON com latitude, longitude e timestamp.
+        // Rota raiz para verificar se a aplicação está no ar
+        get("/", (request, response) -> {
+            return "<html><body><h1>Serviço de localização iniciado com sucesso!</h1>"
+                 + "<p>Use os endpoints /locations para interagir com o serviço.</p></body></html>";
+        });
+
+        // POST /locations → adiciona uma localização
         post("/locations", (request, response) -> {
             // Analisa o JSON do corpo da requisição
             Map<String, Object> locationData = gson.fromJson(request.body(), Map.class);
             locationData.put("timestamp", System.currentTimeMillis());
-            
+
             // Adiciona a nova localização à lista em memória
             locations.add(locationData);
-            
-            // Define o tipo de conteúdo da resposta como JSON
+
+            // Retorna mensagem de sucesso em JSON
             response.type("application/json");
-            // Retorna uma mensagem de sucesso
-            return gson.toJson(Map.of("message", "Location recorded successfully"));
+            Map<String, String> result = new HashMap<>();
+            result.put("message", "Location recorded successfully");
+            return gson.toJson(result);
         });
 
-        // Define a rota GET para listar todas as localizações.
+        // GET /locations → lista todas as localizações
         get("/locations", (request, response) -> {
             response.type("application/json");
-            // Retorna a lista de localizações como JSON
             return gson.toJson(locations);
         });
 
         System.out.println("Serviço de localização iniciado...");
     }
 
-    /**
-     * Obtém a porta atribuída pelo Heroku, ou usa a porta 4567 para desenvolvimento local.
-     * @return A porta do servidor.
-     */
+    // Porta dinâmica para o Heroku ou 4567 local
     static int getHerokuAssignedPort() {
         ProcessBuilder processBuilder = new ProcessBuilder();
         if (processBuilder.environment().get("PORT") != null) {
             return Integer.parseInt(processBuilder.environment().get("PORT"));
         }
-        return 4567; // Porta para desenvolvimento local
+        return 4567;
     }
 }
+
 
