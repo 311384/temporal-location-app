@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registro de Localização</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f4f4f9;
+      }
+      h1 {
+        color: #333;
+      }
+      form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 6px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #45a049;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 10px;
+        background: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        border-radius: 4px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Registrar Localização</h1>
+
+    <form id="locationForm">
+      <label for="latitude">Latitude:</label>
+      <input type="text" id="latitude" name="latitude" required />
+
+      <label for="longitude">Longitude:</label>
+      <input type="text" id="longitude" name="longitude" required />
+
+      <button type="submit">Enviar</button>
+    </form>
+
+    <div id="result"></div>
+
+    <h2>Localizações Registradas</h2>
+    <button onclick="loadLocations()">Atualizar Lista</button>
+    <pre id="locations"></pre>
+
+    <script>
+      const form = document.getElementById("locationForm");
+      const resultDiv = document.getElementById("result");
+      const locationsPre = document.getElementById("locations");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+          latitude: document.getElementById("latitude").value,
+          longitude: document.getElementById("longitude").value,
+        };
+
+        const response = await fetch("/locations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        resultDiv.style.display = "block";
+        resultDiv.textContent = result.message;
+
+        form.reset();
+        loadLocations();
+      });
+
+      async function loadLocations() {
+        const response = await fetch("/locations");
+        const locations = await response.json();
+        locationsPre.textContent = JSON.stringify(locations, null, 2);
+      }
+
+      // Carregar lista ao abrir
+      loadLocations();
+    </script>
+  </body>
+</html>
